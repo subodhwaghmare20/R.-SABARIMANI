@@ -505,9 +505,19 @@ function initTouchSwipe() {
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
+  const navbar = document.getElementById('navbar');
 
   window.addEventListener('scroll', () => {
     const scrollY = window.pageYOffset;
+
+    // Sticky navbar elevation on scroll
+    if (navbar) {
+      if (scrollY > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
 
     sections.forEach(current => {
       const sectionHeight = current.offsetHeight;
