@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initBackToTop();
   initKeyboardNav();
+  initTouchSwipe();
   initScrollSpy();
 });
 
@@ -432,15 +433,72 @@ function initMobileMenu() {
   const navMenu = document.getElementById('navMenu');
 
   if (menuToggle && navMenu) {
-    menuToggle.addEventListener('click', () => {
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuToggle.classList.toggle('active');
       navMenu.classList.toggle('active');
     });
 
     navMenu.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
         navMenu.classList.remove('active');
       });
     });
+
+    // Close menu when tapping outside
+    document.addEventListener('click', (e) => {
+      if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      }
+    });
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      }
+    });
+  }
+}
+
+/* ==========================================================================
+   10b. Mobile Touch Swipe for Lightbox Modal
+   ========================================================================== */
+function initTouchSwipe() {
+  const modal = document.getElementById('lightboxModal');
+  if (!modal) return;
+
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let touchStartY = 0;
+  let touchEndY = 0;
+
+  modal.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  modal.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    // Only trigger if horizontal swipe is dominant and significant
+    if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      if (diffX < 0) {
+        navigateLightbox(1); // Swipe left -> Next
+      } else {
+        navigateLightbox(-1); // Swipe right -> Prev
+      }
+    }
   }
 }
 
